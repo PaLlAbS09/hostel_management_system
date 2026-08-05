@@ -17,27 +17,33 @@ if (!$student) {
     exit(); 
 }
 
-$rooms = $pdo->query("SELECT room_no FROM rooms")->fetchAll(); 
+
+$rooms = $pdo->query("SELECT id, room_number FROM rooms")->fetchAll(); 
 $error = ''; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {     
-    $reg_no = trim($_POST['reg_no']);     
-    $first_name = trim($_POST['first_name']);     
-    $last_name = trim($_POST['last_name']);     
-    $room_no = $_POST['room_no'];     
-    $contact_no = trim($_POST['contact_no']);     
+    $room_id = $_POST['room_id'];     
+    $student_name = trim($_POST['student_name']);     
+    $email = trim($_POST['email']);     
+    $phone = trim($_POST['phone']);     
+    $gender = $_POST['gender'];     
+    $fee = trim($_POST['fee']);     
+    $checkin_date = $_POST['checkin_date'];     
+    $address = trim($_POST['address']);     
     
-    if (empty($reg_no) || empty($first_name) || empty($room_no)) {         
-        $error = "Registration No, First Name, and Room No are required.";     
+    if (empty($student_name) || empty($room_id) || empty($email) || empty($phone)) {         
+        $error = "Student Name, Room, Email, and Phone are required.";     
     } else {         
-        $check = $pdo->prepare("SELECT id FROM students WHERE reg_no = ? AND id != ?");         
-        $check->execute([$reg_no, $id]);         
+        
+        $check = $pdo->prepare("SELECT id FROM students WHERE email = ? AND id != ?");         
+        $check->execute([$email, $id]);         
         
         if ($check->rowCount() > 0) {             
-            $error = "Registration Number already exists for another student.";         
+            $error = "This Email already exists for another student.";         
         } else {             
-            $update = $pdo->prepare("UPDATE students SET reg_no=?, first_name=?, last_name=?, room_no=?, contact_no=? WHERE id=?");             
-            $update->execute([$reg_no, $first_name, $last_name, $room_no, $contact_no, $id]);             
+            $update = $pdo->prepare("UPDATE students SET room_id=?, student_name=?, email=?, phone=?, gender=?, fee=?, checkin_date=?, address=? WHERE id=?");             
+            $update->execute([$room_id, $student_name, $email, $phone, $gender, $fee, $checkin_date, $address, $id]);             
+            
             $_SESSION['success'] = "Student updated successfully.";             
             header("Location: index.php");             
             exit();         
@@ -46,8 +52,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 include '../includes/header.php'; 
-include '../includes/nav.php'; 
+include '../includes/nav.php';
 ?>
+
 <div class="page-wrapper">     
     <div class="container-fluid">         
         <h4 class="card-title mb-3">Edit Student</h4>         
@@ -56,57 +63,90 @@ include '../includes/nav.php';
         <div class="card p-4 shadow-sm">             
             <form method="POST" id="editStudentForm">                 
                 <div class="row">                     
+                    
                     <div class="col-md-6 form-group mb-3">                         
-                        <label class="text-dark">Registration No <span class="text-danger">*</span></label>                         
-                        <input type="text" name="reg_no" id="reg_no" class="form-control" value="<?= htmlspecialchars($student['reg_no']) ?>" required>                     
+                        <label class="text-dark">Full Name <span class="text-danger">*</span></label>                         
+                        <input type="text" name="student_name" id="student_name" class="form-control" value="<?= htmlspecialchars($student['student_name']) ?>" required>                     
                     </div>                     
+                    
                     <div class="col-md-6 form-group mb-3">                         
                         <label class="text-dark">Room Allocated <span class="text-danger">*</span></label>                         
-                        <select name="room_no" id="room_no" class="form-control custom-select" required>                             
+                        <select name="room_id" id="room_id" class="form-select" required>                             
                             <option value="">Select Room...</option>                             
                             <?php foreach ($rooms as $room): ?>                                 
-                                <option value="<?= htmlspecialchars($room['room_no']) ?>" <?= ($room['room_no'] == $student['room_no']) ? 'selected' : '' ?>>                                     
-                                    <?= htmlspecialchars($room['room_no']) ?>                                 
+                                <option value="<?= htmlspecialchars($room['id']) ?>" <?= ($room['id'] == $student['room_id']) ? 'selected' : '' ?>>                                     
+                                    <?= htmlspecialchars($room['room_number']) ?>                                 
                                 </option>                             
                             <?php endforeach; ?>                         
                         </select>                     
                     </div>                     
+                    
                     <div class="col-md-6 form-group mb-3">                         
-                        <label class="text-dark">First Name <span class="text-danger">*</span></label>                         
-                        <input type="text" name="first_name" id="first_name" class="form-control" value="<?= htmlspecialchars($student['first_name']) ?>" required>                     
+                        <label class="text-dark">Email <span class="text-danger">*</span></label>                         
+                        <input type="email" name="email" id="email" class="form-control" value="<?= htmlspecialchars($student['email']) ?>" required>                     
                     </div>                     
+                    
                     <div class="col-md-6 form-group mb-3">                         
-                        <label class="text-dark">Last Name</label>                         
-                        <input type="text" name="last_name" class="form-control" value="<?= htmlspecialchars($student['last_name']) ?>">                     
+                        <label class="text-dark">Phone Number <span class="text-danger">*</span></label>                         
+                        <input type="text" name="phone" id="phone" class="form-control" value="<?= htmlspecialchars($student['phone']) ?>" pattern="[0-9]+" required>                     
                     </div>                     
-                    <div class="col-md-6 form-group mb-4">                         
-                        <label class="text-dark">Contact Number</label>                         
-                        <input type="text" name="contact_no" id="contact_no" class="form-control" value="<?= htmlspecialchars($student['contact_no']) ?>" pattern="[0-9]+">                     
+                    
+                    <div class="col-md-4 form-group mb-3">                         
+                        <label class="text-dark">Gender <span class="text-danger">*</span></label>                         
+                        <select name="gender" id="gender" class="form-select" required>
+                            <option value="">Select...</option>
+                            <option value="Male" <?= ($student['gender'] == 'Male') ? 'selected' : '' ?>>Male</option>
+                            <option value="Female" <?= ($student['gender'] == 'Female') ? 'selected' : '' ?>>Female</option>
+                            <option value="Other" <?= ($student['gender'] == 'Other') ? 'selected' : '' ?>>Other</option>
+                        </select>                     
+                    </div>
+
+                    <div class="col-md-4 form-group mb-3">                         
+                        <label class="text-dark">Fee (Per Month) <span class="text-danger">*</span></label>                         
+                        <input type="number" step="0.01" name="fee" id="fee" class="form-control" value="<?= htmlspecialchars($student['fee']) ?>" required>                     
+                    </div>
+
+                    <div class="col-md-4 form-group mb-3">                         
+                        <label class="text-dark">Check-in Date <span class="text-danger">*</span></label>                         
+                        <input type="date" name="checkin_date" id="checkin_date" class="form-control" value="<?= htmlspecialchars($student['checkin_date']) ?>" required>                     
+                    </div>
+
+                    <div class="col-md-12 form-group mb-4">                         
+                        <label class="text-dark">Address</label>                         
+                        <textarea name="address" id="address" class="form-control" rows="3"><?= htmlspecialchars($student['address']) ?></textarea>                     
                     </div>                 
                 </div>                 
+                
                 <button type="submit" class="btn btn-warning">Update Student</button>                 
                 <a href="index.php" class="btn btn-secondary">Cancel</a>             
             </form>         
         </div>     
-    </div>  
+    </div> 
     
     <script src="../assets/libs/jquery/dist/jquery.min.js"></script>
     <script>
     $(document).ready(function() {
         $('#editStudentForm').on('submit', function(e) {
-            let regNo = $('#reg_no').val().trim();
-            let roomNo = $('#room_no').val();
-            let firstName = $('#first_name').val().trim();
-            let contactNo = $('#contact_no').val().trim();
+            let studentName = $('#student_name').val().trim();
+            let roomId = $('#room_id').val();
+            let email = $('#email').val().trim();
+            let phone = $('#phone').val().trim();
+            let fee = $('#fee').val().trim();
             
-            if (regNo === '' || roomNo === '' || firstName === '') {
+            if (studentName === '' || roomId === '' || email === '' || phone === '') {
                 alert('Please fill out all required fields.');
                 e.preventDefault();
                 return false;
             }
             
-            if (contactNo !== '' && !/^\d+$/.test(contactNo)) {
-                alert('Contact Number must contain only numbers.');
+            if (phone !== '' && !/^\d+$/.test(phone)) {
+                alert('Phone Number must contain only numbers.');
+                e.preventDefault();
+                return false;
+            }
+
+            if (fee < 0) {
+                alert('Fee cannot be negative.');
                 e.preventDefault();
                 return false;
             }

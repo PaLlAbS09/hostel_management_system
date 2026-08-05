@@ -1,10 +1,13 @@
-<?php  
+<?php 
 include '../config/auth.php'; 
 include '../config/dbcon.php'; 
 include '../includes/header.php'; 
 include '../includes/nav.php'; 
 
-$query = "SELECT * FROM students ORDER BY id DESC"; 
+$query = "SELECT students.*, rooms.room_number 
+          FROM students 
+          LEFT JOIN rooms ON students.room_id = rooms.id 
+          ORDER BY students.id DESC"; 
 $students = $pdo->query($query)->fetchAll(); 
 ?>
 <div class="page-wrapper">     
@@ -22,20 +25,20 @@ $students = $pdo->query($query)->fetchAll();
                     <table class="table table-bordered table-striped no-wrap">                         
                         <thead class="bg-dark text-white">                             
                             <tr>                                 
-                                <th>Reg No</th>                                 
+                                <th>Email</th>                                 
                                 <th>Name</th>                                 
                                 <th>Room No</th>                                 
-                                <th>Contact</th>                                 
+                                <th>Contact (Phone)</th>                                 
                                 <th>Actions</th>                             
                             </tr>                         
                         </thead>                         
                         <tbody>                             
                             <?php foreach ($students as $student): ?>                                 
                                 <tr>                                     
-                                    <td><?= htmlspecialchars($student['reg_no'] ?? '') ?></td>                                     
-                                    <td><?= htmlspecialchars($student['first_name'] . ' ' . $student['last_name']) ?></td>                                     
-                                    <td><?= htmlspecialchars($student['room_no'] ?? '') ?></td>                                     
-                                    <td><?= htmlspecialchars($student['contact_no'] ?? '') ?></td>                                     
+                                    <td><?= htmlspecialchars($student['email'] ?? '') ?></td>                                     
+                                    <td><?= htmlspecialchars($student['student_name'] ?? '') ?></td>                                     
+                                    <td><?= htmlspecialchars($student['room_number'] ?? 'Unassigned') ?></td>                                     
+                                    <td><?= htmlspecialchars($student['phone'] ?? '') ?></td>                                     
                                     <td>                                         
                                         <a href="edit.php?id=<?= $student['id'] ?>" class="btn btn-sm btn-warning">Edit</a>                                         
                                         <a href="delete.php?id=<?= $student['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>                                     
@@ -51,4 +54,5 @@ $students = $pdo->query($query)->fetchAll();
             </div>         
         </div>     
     </div> 
+</div>
 <?php include '../includes/footer.php'; ?>

@@ -2,27 +2,50 @@
 include '../config/auth.php'; 
 include '../config/dbcon.php'; 
 
-$rooms = $pdo->query("SELECT room_no FROM rooms")->fetchAll(); 
+
+$rooms = $pdo->query("SELECT id, room_number FROM rooms")->fetchAll(); 
+if (empty($rooms)) {
+    $rooms = [
+        ['id' => '101', 'room_number' => 'Room 101 '],
+        ['id' => '102', 'room_number' => 'Room 102 '],
+        ['id' => '103', 'room_number' => 'Room 103 '],
+        ['id' => '104', 'room_number' => 'Room 104 '],
+        ['id' => '201', 'room_number' => 'Room 201 '],
+        ['id' => '202', 'room_number' => 'Room 202 '],
+        ['id' => '203', 'room_number' => 'Room 203 '],
+        ['id' => '204', 'room_number' => 'Room 204 '],
+        ['id' => '301', 'room_number' => 'Room 301 '],
+        ['id' => '302', 'room_number' => 'Room 302 '],
+        ['id' => '303', 'room_number' => 'Room 303 '],
+        ['id' => '304', 'room_number' => 'Room 304 '],
+    ];
+}
+
 $error = ''; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {     
-    $reg_no = trim($_POST['reg_no']);     
-    $first_name = trim($_POST['first_name']);     
-    $last_name = trim($_POST['last_name']);     
-    $room_no = $_POST['room_no'];     
-    $contact_no = trim($_POST['contact_no']);     
+    $room_id = $_POST['room_id'];     
+    $student_name = trim($_POST['student_name']);     
+    $email = trim($_POST['email']);     
+    $phone = trim($_POST['phone']);     
+    $gender = $_POST['gender'];     
+    $fee = trim($_POST['fee']);     
+    $checkin_date = $_POST['checkin_date'];     
+    $address = trim($_POST['address']);     
 
-    if (empty($reg_no) || empty($first_name) || empty($room_no)) {         
-        $error = "Registration No, First Name, and Room No are required.";     
+    if (empty($student_name) || empty($room_id) || empty($email) || empty($phone)) {         
+        $error = "Student Name, Room, Email, and Phone are required.";     
     } else {         
-        $stmt = $pdo->prepare("SELECT id FROM students WHERE reg_no = ?");         
-        $stmt->execute([$reg_no]);         
+        
+        $stmt = $pdo->prepare("SELECT id FROM students WHERE email = ?");         
+        $stmt->execute([$email]);         
         
         if ($stmt->rowCount() > 0) {             
-            $error = "Student with this Registration Number already exists.";         
+            $error = "A student with this Email already exists.";         
         } else {             
-            $insert = $pdo->prepare("INSERT INTO students (reg_no, first_name, last_name, room_no, contact_no) VALUES (?, ?, ?, ?, ?)");             
-            $insert->execute([$reg_no, $first_name, $last_name, $room_no, $contact_no]);             
+            $insert = $pdo->prepare("INSERT INTO students (room_id, student_name, email, phone, gender, fee, checkin_date, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");             
+            $insert->execute([$room_id, $student_name, $email, $phone, $gender, $fee, $checkin_date, $address]);             
+            
             $_SESSION['success'] = "Student registered successfully.";             
             header("Location: index.php");             
             exit();         
@@ -30,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } 
 }
 include '../includes/header.php'; 
-include '../includes/nav.php'; 
+include '../includes/nav.php';
 ?>
 
 <div class="page-wrapper">     
@@ -41,32 +64,58 @@ include '../includes/nav.php';
         <div class="card p-4 shadow-sm">             
             <form method="POST" id="addStudentForm">                 
                 <div class="row">                     
+                    
                     <div class="col-md-6 form-group mb-3">                         
-                        <label class="text-dark">Registration No <span class="text-danger">*</span></label>                         
-                        <input type="text" name="reg_no" id="reg_no" class="form-control" required>                     
+                        <label class="text-dark">Full Name <span class="text-danger">*</span></label>                         
+                        <input type="text" name="student_name" id="student_name" class="form-control" placeholder="Enter student's full name" required>                     
                     </div>                     
+                    
                     <div class="col-md-6 form-group mb-3">                         
                         <label class="text-dark">Room Allocated <span class="text-danger">*</span></label>                         
-                        <select name="room_no" id="room_no" class="form-control custom-select" required>                             
+                        <select name="room_id" id="room_id" class="form-select" required>                             
                             <option value="">Select Room...</option>                             
                             <?php foreach ($rooms as $room): ?>                                 
-                                <option value="<?= htmlspecialchars($room['room_no']) ?>"><?= htmlspecialchars($room['room_no']) ?></option>                             
+                                <option value="<?= htmlspecialchars($room['id']) ?>"><?= htmlspecialchars($room['room_number']) ?></option>                             
                             <?php endforeach; ?>                         
                         </select>                     
                     </div>                     
+                    
                     <div class="col-md-6 form-group mb-3">                         
-                        <label class="text-dark">First Name <span class="text-danger">*</span></label>                         
-                        <input type="text" name="first_name" id="first_name" class="form-control" required>                     
+                        <label class="text-dark">Email <span class="text-danger">*</span></label>                         
+                        <input type="email" name="email" id="email" class="form-control" placeholder="student@example.com" required>                     
                     </div>                     
+                    
                     <div class="col-md-6 form-group mb-3">                         
-                        <label class="text-dark">Last Name</label>                         
-                        <input type="text" name="last_name" class="form-control">                     
+                        <label class="text-dark">Phone Number <span class="text-danger">*</span></label>                         
+                        <input type="text" name="phone" id="phone" class="form-control" pattern="[0-9]+" placeholder="Enter phone number" required>                     
                     </div>                     
-                    <div class="col-md-6 form-group mb-4">                         
-                        <label class="text-dark">Contact Number</label>                         
-                        <input type="text" name="contact_no" id="contact_no" class="form-control" pattern="[0-9]+">                     
+                    
+                    <div class="col-md-4 form-group mb-3">                         
+                        <label class="text-dark">Gender <span class="text-danger">*</span></label>                         
+                        <select name="gender" id="gender" class="form-select" required>
+                            <option value="">Select...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>                     
+                    </div>
+
+                    <div class="col-md-4 form-group mb-3">                         
+                        <label class="text-dark">Fee (Per Month) <span class="text-danger">*</span></label>                         
+                        <input type="number" step="0.01" name="fee" id="fee" class="form-control" required>                     
+                    </div>
+
+                    <div class="col-md-4 form-group mb-3">                         
+                        <label class="text-dark">Check-in Date <span class="text-danger">*</span></label>                         
+                        <input type="date" name="checkin_date" id="checkin_date" class="form-control" required>                     
+                    </div>
+
+                    <div class="col-md-12 form-group mb-4">                         
+                        <label class="text-dark">Address</label>                         
+                        <textarea name="address" id="address" class="form-control" rows="3" placeholder="Enter full address"></textarea>                     
                     </div>                 
                 </div>                 
+                
                 <button type="submit" class="btn btn-success">Register Student</button>                 
                 <a href="index.php" class="btn btn-secondary">Cancel</a>             
             </form>         
@@ -77,19 +126,26 @@ include '../includes/nav.php';
     <script>
     $(document).ready(function() {
         $('#addStudentForm').on('submit', function(e) {
-            let regNo = $('#reg_no').val().trim();
-            let roomNo = $('#room_no').val();
-            let firstName = $('#first_name').val().trim();
-            let contactNo = $('#contact_no').val().trim();
+            let studentName = $('#student_name').val().trim();
+            let roomId = $('#room_id').val();
+            let email = $('#email').val().trim();
+            let phone = $('#phone').val().trim();
+            let fee = $('#fee').val().trim();
             
-            if (regNo === '' || roomNo === '' || firstName === '') {
+            if (studentName === '' || roomId === '' || email === '' || phone === '') {
                 alert('Please fill out all required fields.');
                 e.preventDefault();
                 return false;
             }
             
-            if (contactNo !== '' && !/^\d+$/.test(contactNo)) {
-                alert('Contact Number must contain only numbers.');
+            if (phone !== '' && !/^\d+$/.test(phone)) {
+                alert('Phone Number must contain only numbers.');
+                e.preventDefault();
+                return false;
+            }
+
+            if (fee < 0) {
+                alert('Fee cannot be negative.');
                 e.preventDefault();
                 return false;
             }
