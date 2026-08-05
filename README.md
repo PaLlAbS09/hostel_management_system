@@ -50,7 +50,7 @@ hostel_management/
 
 Run the Application
 Open your web browser and navigate to:
-http://localhost/hostel_management/login.php
+(http://localhost/php-class4/Hostel_Management_System/)
 
 Register a new admin account to get started!
 
