@@ -151,5 +151,29 @@
         .logout-btn i {
             font-size: 1.2rem;
         }
+
+        .scroll-sidebar {
+            height: calc(100vh - 64px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 60px;
+        }
+
+        .scroll-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scroll-sidebar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+
+        .scroll-sidebar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
     </style>
 </head>
