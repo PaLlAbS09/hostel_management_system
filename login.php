@@ -67,7 +67,7 @@ if (isset($_SESSION['user_id'])) {
                                 </div>
                                 
                                 <div class="col-lg-12 text-center mt-4">
-                                    <a href="./forgot_password.php" class="text-danger text-decoration-none">Forgot password?</a>
+                                    <a href="forget_password.php" class="text-danger text-decoration-none">Forgot password?</a>
                                 </div>
                              
                             </div>
